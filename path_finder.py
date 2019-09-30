@@ -1,14 +1,14 @@
 # Author: Krebsalad
-# date: 28 aug
+# date: 30 09 19
 # made with : pydroid python3 IDE
 
 class Node:
     
-    def __init__ (self, _x, _y):
-        self.x = _x
-        self.y = _y
-        
-        self.reset()
+    def __init__ (self, _x, _y, _z=0):
+	    self.x = _x
+	    self.y = _y
+	    self.z = _z
+	    self.reset()
     
     def reset(self):
         self.visited = False
@@ -19,7 +19,7 @@ class Node:
         self.parent = None
    
     def totalCost(self):
-       return self.distance + self.heuristic
+	    return self.distance + self.heuristic
 
 class PathFinder:
     
@@ -29,33 +29,34 @@ class PathFinder:
         self.closedList = []
         self.process = []
     
-    def getNodeFromProcess(self, _x, _y):
+    def getNodeFromProcess(self, _x, _y, _z):
         for n in self.process:
-            if(n.x == _x and n.y == _y):
+            if(n.x == _x and n.y == _y and n.z == _z):
                 return n
         return None
          
-    def getNodeFromClosedList(self, _x, _y):
+    def getNodeFromClosedList(self, _x, _y, _z):
         for n in self.closedList:
-            if(n.x == _x and n.y == _y):
+            if(n.x == _x and n.y == _y and n.z == _z):
                 return n
         return None
     
-    def findAdjacentNodes(self):
+    def findAdjacentNodes(self, adjacent_val=1.5):
         # find adjacent nodes
         for n1 in self.nodes:
             for n2 in self.nodes:
                 if(n1 != n2):
-                    if(abs(n1.x - n2.x) <= 1.5):
-                        if(abs(n1.y - n2.y) <= 1.5):
-                            n1.adjacent_nodes.append(n2)
+                    if(abs(n1.x - n2.x) <= adjacent_val):
+                        if(abs(n1.y - n2.y) <= adjacent_val):
+	                        if(abs(n1.z - n2.z) <= adjacent_val):
+	                            n1.adjacent_nodes.append(n2)
                     
     def calculateNodeHeuristic(self, n1, n2):
         # pythagoras theorem without sqrt
         a = pow(abs(n1.x - n2.x), 2)
         b = pow(abs(n1.y - n2.y), 2)
-        c = a + b
-        return c
+        c = pow(abs(n1.z - n2.z), 2)
+        return a + b + c
     
     def findPath(self, start, target, range=5):
         # to return nodes
@@ -72,7 +73,7 @@ class PathFinder:
         estimated_distance = self.calculateNodeHeuristic(start, target)
         
         # reset node heuristics
-        for n in nodes:
+        for n in self.nodes:
              n.reset()
         
         # find adjacent nodes up.to 1.5 units
@@ -105,7 +106,7 @@ class PathFinder:
             currentNode = self.process.pop(new_i)
             
             # exit if path found
-            if(currentNode.x == target.x and currentNode.y == target.y):
+            if(currentNode.x == target.x and currentNode.y == target.y and currentNode.z == target.z):
                 print("  found a path")
                 break
             
@@ -120,7 +121,7 @@ class PathFinder:
                     continue
                 
                 # set heuristics and distance if node not in process yet
-                if(self.getNodeFromProcess(a_n.x, a_n.y) == None):
+                if(self.getNodeFromProcess(a_n.x, a_n.y, a_n.z) == None):
                     a_n.parent = currentNode
                     a_n.distance = currentNode.distance + 1
                     a_n.heuristic = self.calculateNodeHeuristic(a_n, target)
@@ -137,42 +138,3 @@ class PathFinder:
         while not (next_n == None ):
             self.path.append(next_n)
             next_n = next_n.parent
-
-# create and qprint map
-map_size = 10
-nodes = []
-print_text = "  Map:\n   "
-for x in range(0, map_size):
-    print_text = print_text + " " + str(x) + " "
-    
-for x in range(0, map_size):
-    print_text = print_text + "\n " + str(x) +  "|"
-    for y in range(0, map_size):
-        nodes.append(Node(x, y))
-        print_text = print_text+" + "
-
-print(print_text)
-
-# finder
-finder = PathFinder(nodes)
-finder.findPath(nodes[0], nodes[64])
-
-
-# show path
-print_text = "  Path:\n   "
-for x in range(0, map_size):
-    print_text = print_text + " " + str(x) + " "
-
-for x in range(0, map_size):
-    print_text = print_text + "\n " + str(x) +  "|"
-    for y in range(0, map_size):
-        found = False
-        for node in finder.path:
-            if(node.x == x and node.y == y):
-                print_text = print_text + " o "
-                found = True
-                break             
-        if(not found):
-            print_text = print_text + " + "
-           
-print(print_text)
